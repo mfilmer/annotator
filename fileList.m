@@ -61,9 +61,6 @@ classdef fileList < handle
             set(this.list, 'Position', [0, 0, width, height-this.buttonHeight*2-this.textHeight-3]);
         end
         
-        function upDir(this)
-        end
-        
         function openDir(this)
             newDir = uigetdir(this.currentDir, 'Select Working Directory');
             if (newDir)
@@ -97,6 +94,15 @@ classdef fileList < handle
                 this.list.String = names;
                 this.list.Value = 1;
             end
+        end
+        
+        function this.upDir()
+        end
+        
+        function this.openFile()
+        end
+        
+        function this.closeFile()
         end
     end
 end
