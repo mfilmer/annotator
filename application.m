@@ -23,13 +23,14 @@ classdef application < handle
     methods
         function this = application()
             % Set window dimensions
-            X = 400;
-            Y = 100;
+            X = 200;
+            Y = 30;
             width = 1024;
-            height = 760;
+            height = 600;
             
             % Create UI Elements
-            this.window = figure('Position', [X, Y, width, height], 'ResizeFcn', @(src,eventdata) this.redrawWindow());
+            this.window = figure('Position', [X, Y, width, height], 'MenuBar', 'none', ...
+                'ResizeFcn', @(src,eventdata) this.redrawWindow());
             this.fileList = fileList(this.window);
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
             this.tabs = uitab(this.tabGroup, 'Title', 'aoeu');
