@@ -1,15 +1,20 @@
 classdef application < handle
     properties
+        % UI elements
         window;         % Main UI figure
         fileList;       % fileList object
         tabGroup;       % Tab group for each image
         tabs;           % Each tab
         buttonPanel;    % Image editor buttons
         editors;        % Each editor object, one per tab
+        buttons = [];   % Buttons in the button panel, listed from top down
+        
+        % Data
+        currentDir;     % Current directory
     end
     properties
-        buttonWidth = 75;
-        buttonHeight = 20;
+        buttonHeight = 25;
+        buttonVStep = 25;
         fileListWidth = 250;
         buttonPanelWidth = 150;
         minWidth = 600;
@@ -29,7 +34,12 @@ classdef application < handle
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
             this.tabs = uitab(this.tabGroup, 'Title', 'aoeu');
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
-            uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'aoeu');
+            
+            % Button panel buttons
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Distance');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Rectangle');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Polygon');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Angle');
             
             % Position UI elements
             this.redrawWindow();
@@ -39,8 +49,6 @@ classdef application < handle
             if(~isempty(this.window))
                 % Get window location and dimensions
                 pos = get(this.window, 'Position');
-                X = pos(1);
-                Y = pos(2);
                 width = pos(3);
                 height = pos(4);
                 
@@ -53,16 +61,27 @@ classdef application < handle
                 end
                 
                 % Move elements
-                %set(this.window, 'Position', [X, Y, width, height]);
                 this.fileList.setPosition([0, 0, this.fileListWidth, height]);
                 set(this.tabGroup, 'Position', [this.fileListWidth, 0, width-this.fileListWidth-this.buttonPanelWidth, height]);
                 set(this.buttonPanel, 'Position', [width-this.buttonPanelWidth,0,this.buttonPanelWidth, height]);
+                
+                % Position button panel buttons
+                for i = 1:length(this.buttons)
+                    button = this.buttons(i);
+                    set(button, 'Position', [0, height-this.buttonHeight-this.buttonVStep*(i-1)-2, this.buttonPanelWidth-3, this.buttonHeight]);
+                end
+            end
+        end
+        
+        function openDirectory(this)
+            newDir = uigetdir(this.currentDir, 'Select Working Directory');
+            if (newDir)
+                this.currentDir = newDir;
             end
         end
         
         function h = newButton(this, parent, pos, label)
-            h = uicontrol('Parent', parent, 'String', label, ...
-                'Style', 'pushbutton', ...
+            h = uicontrol('Parent', parent, 'String', label, 'Style', 'pushbutton', ...
                 'Position', [pos, this.buttonWidth, this.buttonHeight]);
         end
     end
