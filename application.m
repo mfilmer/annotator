@@ -46,14 +46,14 @@ classdef application < handle
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
             
             % Button panel buttons
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Pan');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Distance');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Rectangle');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Polygon');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Angle');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Crop');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Set Scale');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Scalebar');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Pan', 'Callback', @(src,~) this.selectTool_CB(src, tools.Pan));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Distance', 'Callback', @(src,~) this.selectTool_CB(src, tools.Distance));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Rectangle', 'Callback', @(src,~) this.selectTool_CB(src, tools.Rectangle));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Polygon', 'Callback', @(src,~) this.selectTool_CB(src, tools.Polygon));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Angle', 'Callback', @(src,~) this.selectTool_CB(src, tools.Angle));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Crop', 'Callback', @(src,~) this.selectTool_CB(src, tools.Crop));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Set Scale', 'Callback', @(src,~) this.selectTool_CB(src, tools.SetScale));
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Scalebar', 'Callback', @(src,~) this.selectTool_CB(src, tools.Scalebar));
             
             % Position UI elements
             this.redrawWindow();
@@ -85,6 +85,27 @@ classdef application < handle
                     set(button, 'Position', [0, height-this.buttonHeight-this.buttonVStep*(i-1)-2, this.buttonPanelWidth-3, this.buttonHeight]);
                 end
             end
+        end
+        
+        function selectTool_CB(this, src, tool)
+            % Check if button is up or down
+            if(src.Value)
+                % Button is down: reset all other buttons
+                for button = this.buttons
+                    if (~button == src)
+                        button.Value = 0;
+                    end
+                end
+            else
+                % Button is up: we selected the None tool
+                tool = tools.None;
+            end
+            
+            % Call the editor tool selection callback
+           editor = this.getCurrentEditor();
+           if(~isempty(editor))
+               editor.activateTool(tool);
+           end
         end
         
         function mouseMove_CB(this)
