@@ -8,9 +8,6 @@ classdef application < handle
         buttonPanel;    % Image editor buttons
         editors;        % Each editor object, one per tab
         buttons = [];   % Buttons in the button panel, listed from top down
-        
-        % Data
-        currentDir;     % Current directory
     end
     properties
         buttonHeight = 25;
@@ -38,22 +35,24 @@ classdef application < handle
             
             % Create UI Elements
             this.window = figure('Position', [X, Y, width, height], 'MenuBar', 'none', ...
+                'Position', [X, Y, width, height], ...
                 'ResizeFcn', @(src,eventdata) this.redrawWindow(), ...
-                'Position', [X, Y, width, height]);
+                'WindowButtonMotionFcn', @(~,~) this.mouseMove_CB(), ...
+                'WindowScrollWheelFcn', @(~,eventdata) this.mouseScroll_CB(eventdata));
             this.fileList = fileList(this.window);
             this.fileList.fileOpenCB = @this.openFile_CB;
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
-            this.tabs = uitab(this.tabGroup, 'Title', 'aoeu');
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
             
             % Button panel buttons
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Distance');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Rectangle');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Polygon');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Angle');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Set Scale');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Scalebar');
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Crop');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Pan');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Distance');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Rectangle');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Polygon');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Angle');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Crop');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Set Scale');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Scalebar');
             
             % Position UI elements
             this.redrawWindow();
@@ -87,19 +86,52 @@ classdef application < handle
             end
         end
         
-        function openDirectory(this)
-            newDir = uigetdir(this.currentDir, 'Select Working Directory');
-            if (newDir)
-                this.currentDir = newDir;
+        function mouseMove_CB(this)
+            editor = this.getCurrentEditor();
+            if(~isempty(editor))
+                editor.refresh();
             end
         end
         
-        function openFile_CB(this, index, name)
+        function mouseScroll_CB(this, eventdata)
+            editor = this.getCurrentEditor();
+            if(~isempty(editor))
+                editor.scrollZoom(eventdata.VerticalScrollCount);
+            end
+        end
+        
+        function openFile_CB(this, name)
             this.openFile(name)
         end
         
-        function openFile(this, name)
-            disp(['Open ', name ]);
+        % Open a file in a new editor tab
+        function openFile(this, fullname)
+            [~, name, ext] = fileparts(fullname);
+            
+            % Create new tab
+            t = uitab(this.tabGroup, 'Title', [name, ext]);
+            
+            % Create new editor for the tab
+            if(isempty(this.editors))
+                this.editors = editor(t, fullname);
+            else
+                this.editors(end+1) = editor(t, fullname);
+            end
+            
+            % ???
+            
+            % Profit
+        end
+    end
+    
+    methods (Access = private)
+        function editor = getCurrentEditor(this)
+            editor = [];
+            numTabs = length(this.tabGroup.Children);
+            if(numTabs)
+                selTabIndex = this.tabGroup.SelectedTab == this.tabGroup.Children;
+                editor = this.editors(selTabIndex);
+            end
         end
     end
 end

@@ -1,9 +1,9 @@
 classdef fileList < handle
     properties
         % User callbacks
-        fileSelectCB;   % Takes 2 parameters: Selected file index, and selected file name
-        fileOpenCB;     % Takes 2 parameters: Selected file index, and selected file name
-        fileCloseCB;    % Takes 2 parameters: Selected file index, and selected file name
+        fileSelectCB;
+        fileOpenCB;
+        fileCloseCB;
     end
     properties (Access = protected)
         % UI Elements
@@ -161,7 +161,7 @@ classdef fileList < handle
             if(~isempty(fcn))
                 value = this.fileListbox.Value;
                 name = fullfile(this.currentDir, this.fileListbox.String{value});
-                fcn(value, name);
+                fcn(name);
             end
         end
     end
