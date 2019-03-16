@@ -6,7 +6,8 @@ classdef editor < handle
         activeTool = tools.None;        % Which tool is currently in use
         activeAnnotation;       % Currently active annotation
         mouseoverAnnotation;    % Currently moused-over annotation
-        dragStartPos = [];      % Starting position of a drag operation
+        panStartPos = [];      % Starting position of a drag operation
+        dragHandle = [];        % Handle currently being dragged
         annotations;            % List of all the annotations
     end
     properties
@@ -40,28 +41,36 @@ classdef editor < handle
             this.ax.PickableParts = 'all';
         end
         function delete(~)
-            % Clean up annotations
+            for annotation = this.annotations
+                delete(annotation);
+            end
         end
     end
     
     methods (Access = protected)
-        % Checks for, and returns if found, the mouseed over annotation
-        function h = mouseoverCheck(this, pos)
-            h = [];
+        % Checks for, and returns if found, the mouseed over annotation and
+        % handle
+        function [ann, han] = mouseoverCheck(this, pos)
+            ann = [];
+            han = [];
             minDist = [];
             for annotation = this.annotations
                 dist = annotation.getDist(pos);
                 if (dist < this.hitDist)
                     if (isempty(minDist))
                         minDist = dist;
-                        h = annotation;
+                        ann = annotation;
                     else
                         if (dist < minDist)
                             minDist = dist;
-                            h = annotation;
+                            ann = annotation;
                         end
                     end
                 end
+            end
+            
+            if (~isempty(ann))
+                han = ann.getHandle(pos);
             end
         end
     end
@@ -75,20 +84,18 @@ classdef editor < handle
             xpos = pos(1);
             ypos = pos(2);
             
-            % If this.dragStartPos is empty, we are not in a drag and drop
-            % operation. If it isn't empty, we are, which means we are
-            % panning the image
-            if(isempty(this.dragStartPos))
-                % Hover select operation
-                h = this.mouseoverCheck(pos);
-                if(~isempty(h))
-                    this.setMouseOver(h);
-                else
-                    this.clearMouseOver();
-                end
-            else
-                % Pan operation
-                delta = this.dragStartPos - [xpos, ypos];
+            % Check if we are in a handle drag operation
+            if(~isempty(this.dragHandle))
+                % Tell the drag handle its new location
+                this.dragHandle.move(pos);
+                
+                return;
+            end
+            
+            % Check if we are in a pan operation
+            if(~isempty(this.panStartPos))
+                % Pan image or drag handle operation
+                delta = this.panStartPos - [xpos, ypos];
                 
                 % Stop at the edge of the image
                 xrange = this.ax.XLim + delta(1);
@@ -109,6 +116,17 @@ classdef editor < handle
                 
                 this.ax.XLim = xrange;
                 this.ax.YLim = yrange;
+                
+                return;
+            end
+            
+            % We are not in any dragging operations, therefore this is the
+            % hover select operation
+            ann = this.mouseoverCheck(pos);
+            if(~isempty(ann))
+                this.setMouseOver(ann);
+            else
+                this.clearMouseOver();
             end
         end
         function noneClickOperation(this)
@@ -117,15 +135,26 @@ classdef editor < handle
             
             % If we click on an annotation, do something. Otherwise we
             % start an image pan operation
-            h = this.mouseoverCheck(pos);
-            if(isempty(h))
-                % Start pan operation
-                this.dragStartPos = pos;
+            [~,han] = this.mouseoverCheck(pos);
+            % This is only a handle drag operation if we hit a handle
+            if(~isempty(han))
+                % We hit a handle, this is a handle drag operation
+                this.dragHandle = han;
+                disp('start drag');
+            else
+                % We did not hit a handle, this is a pan operation
+                this.panStartPos = pos;
+                disp('start pan');
             end
         end
         function noneReleaseOperation(this)
+            % Finish our handle drag operation
+            this.dragHandle = [];
+            
             % Finish our pan operation
-            this.dragStartPos = [];
+            this.panStartPos = [];
+            
+            disp('clear operation');
         end
         
         % Set the moused-over annotation to the specified one
@@ -222,7 +251,7 @@ classdef editor < handle
         function buttonUp_CB(this)
             % We only care if we were in a drag and drop operation. So we
             % return early if we were not
-            if(isempty(this.dragStartPos))
+            if(isempty(this.panStartPos))
                 return;
             end
             

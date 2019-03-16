@@ -13,6 +13,11 @@ classdef distance < annotation
             this.points = reshape(point, 1,2);
         end
         
+        % Destructor
+        function delete(this)
+            delete(this.text);
+        end
+        
         function finishLine(this, point)
             x1 = this.h.XData(1);
             y1 = this.h.YData(1);
@@ -23,6 +28,16 @@ classdef distance < annotation
             this.points = [x1,y1; x2,y2];
             this.text = text('Color', this.color, 'FontSize', this.fontSize, ...
                 'HorizontalAlignment', 'center');     %#ok
+            this.updateMeasurement();
+        end
+        
+        % Called to force a redraw of the line
+        function updateLine(this)
+            % Just move the two points
+            this.h.XData = this.points(:,1)';
+            this.h.YData = this.points(:,2)';
+            
+            % Also update the text
             this.updateMeasurement();
         end
         
@@ -61,7 +76,13 @@ classdef distance < annotation
             this.text.Rotation = angle;
         end
         
-        function movePoint(this, index, pos)    %#ok
+        function movePoint(this, handle, pos)
+            ind = this.handles == handle;
+            
+            this.points(ind,:) = reshape(pos, 1, 2);
+            
+            % Update the line display
+            this.updateLine();
         end
         
         function dist = getDist(this, point)

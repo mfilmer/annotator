@@ -17,16 +17,57 @@ classdef annotation < handle
         % mean the distance to the closest point of the annotation, or
         % maybe a center point
         getDist(this, point)
+        
+        % Called when a handle moves a control point
+        movePoint(this, handle, point);
     end
     
     methods
+        % Destructor
+        function delete(this)
+            for handle = this.handles
+                delete(handle);
+            end
+            delete(this.h);
+        end
+        
+        % Return a handle at position. If more than one is at the position
+        % then return the closest. If none are at the position, return
+        % empty
+        function han = getHandle(this, pos)
+            % Default return value is empty
+            han = [];
+            
+            % We don't have to check anything if there aren't any handles
+            if (isempty(this.handles))
+                return;
+            end
+            
+            
+            dists = zeros(1,length(this.handles));
+            for i = 1:length(this.handles)
+                handle = this.handles(i);
+                dists(i) = handle.hitCheck(pos);
+            end
+            
+            % Determine if there is at least one hit
+            if isempty(dists >= 0)
+                return;
+            end
+            
+            % Find closest hit
+            dists(dists < 0) = max(dists)*1.1;  
+            han = this.handles(dists == min(dists));
+            han = han(1);
+        end
+        
         function enableHandles(this)
             % Check that we aren't already enabled, otherwise do nothing
             if (isempty(this.handles))
-                this.handles = aHandle(this.ax, this.points(1,:));
+                this.handles = aHandle(this, this.ax, this.points(1,:));
                 for i = 2:size(this.points,1)
                     point = this.points(i,:);
-                    this.handles(end+1) = aHandle(this.ax, point);
+                    this.handles(end+1) = aHandle(this, this.ax, point);
                 end
             end
         end
