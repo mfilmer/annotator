@@ -59,13 +59,30 @@ classdef editor < handle
                 % Hover select operation
             else
                 % Pan operation
-                disp('panning');
                 pos = this.ax.CurrentPoint;
                 xpos = pos(1);
                 ypos = pos(3);
                 delta = this.dragStartPos - [xpos, ypos];
-                this.ax.XLim = this.ax.XLim + delta(1);
-                this.ax.YLim = this.ax.YLim + delta(2);
+                
+                % Stop at the edge of the image
+                xrange = this.ax.XLim + delta(1);
+                yrange = this.ax.YLim + delta(2);
+                
+                if(xrange(2) > this.width)
+                    xrange = xrange - (xrange(2) - this.width);
+                end
+                if(xrange(1) < 0)
+                    xrange = xrange - xrange(1);
+                end
+                if(yrange(2) > this.height)
+                    yrange = yrange - (yrange(2) - this.height);
+                end
+                if(yrange(1) < 0)
+                    yrange = yrange - yrange(1);
+                end
+                
+                this.ax.XLim = xrange;
+                this.ax.YLim = yrange;
             end
         end
         
@@ -109,7 +126,6 @@ classdef editor < handle
         
         % Call this function in response to a ButtonDownFcn on the axis
         function buttonDown_CB(this)
-            disp('button down');
             switch(this.activeTool)
                 case tools.Pan
                 case tools.Zoom
