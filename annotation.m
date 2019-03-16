@@ -7,6 +7,7 @@ classdef annotation < handle
     end
     properties
         color = [1,0,0];
+        fontSize = 20;
         lineWidth = 3;
         arrowLength = 10;
     end
@@ -63,6 +64,46 @@ classdef annotation < handle
         % Distance between two pointsn
         function dist = distToPoint(~, p1, p2)
             dist = sqrt((p2(1) - p1(1))^2 + (p2(2) - p1(2))^2);
+        end
+    end
+    
+    methods (Static)
+        % Converts a number into a string in engineering notation
+        function [str,factor] = num2str(dist)
+            factor = 0;
+            while(dist >= 1000)
+                factor = factor + 3;
+                dist = dist / 1000;
+            end
+            while(dist < 1)
+                factor = factor - 3;
+                dist = dist * 1000;
+            end
+            
+            if (dist >= 100)
+                str = num2str(dist, '%0.0f');
+            elseif (dist >= 10)
+                str = num2str(dist, '%0.1f');
+            else
+                str = num2str(dist, '%0.2f');
+            end
+        end
+        
+        function prefix = getPrefix(factor)
+            switch factor
+                case 3
+                    prefix = 'k';
+                case -3
+                    prefix = 'm';
+                case -6
+                    prefix = 'u';
+                case -9
+                    prefix = 'n';
+                case -12
+                    prefix = 'p';
+                otherwise
+                    prefix = '';
+            end
         end
     end
 end

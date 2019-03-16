@@ -168,6 +168,7 @@ classdef editor < handle
             else
                 % Second point: set second point
                 this.activeAnnotation.finishLine(point);
+                this.activeAnnotation = [];
             end
         end
         
