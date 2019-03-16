@@ -43,15 +43,15 @@ classdef annotation < handle
                 return;
             end
             
-            
+            % Get hit-check distances to each handle
             dists = zeros(1,length(this.handles));
             for i = 1:length(this.handles)
                 handle = this.handles(i);
                 dists(i) = handle.hitCheck(pos);
             end
             
-            % Determine if there is at least one hit
-            if isempty(dists >= 0)
+            % Check if there are no hits. Return if none
+            if sum(dists >= 0) == 0
                 return;
             end
             

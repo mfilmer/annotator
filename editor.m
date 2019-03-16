@@ -20,7 +20,7 @@ classdef editor < handle
     end
     properties
         zoomStep = 0.1; % How far to zoom on each scroll step (fraction of 1)
-        hitDist = 25;   % How far away a mouseover hit is registered
+        hitDist = 150;   % How far away a mouseover hit is registered
     end
     
     % Constructors, destructors, etc.
@@ -40,7 +40,7 @@ classdef editor < handle
             this.ax.ButtonDownFcn = @(~,eventdata) this.buttonDown_CB(eventdata);    %# This must come after imshow()
             this.ax.PickableParts = 'all';
         end
-        function delete(~)
+        function delete(this)
             for annotation = this.annotations
                 delete(annotation);
             end
@@ -140,11 +140,9 @@ classdef editor < handle
             if(~isempty(han))
                 % We hit a handle, this is a handle drag operation
                 this.dragHandle = han;
-                disp('start drag');
             else
                 % We did not hit a handle, this is a pan operation
                 this.panStartPos = pos;
-                disp('start pan');
             end
         end
         function noneReleaseOperation(this)
@@ -153,8 +151,6 @@ classdef editor < handle
             
             % Finish our pan operation
             this.panStartPos = [];
-            
-            disp('clear operation');
         end
         
         % Set the moused-over annotation to the specified one
@@ -251,7 +247,7 @@ classdef editor < handle
         function buttonUp_CB(this)
             % We only care if we were in a drag and drop operation. So we
             % return early if we were not
-            if(isempty(this.panStartPos))
+            if(isempty(this.panStartPos) && isempty(this.dragHandle))
                 return;
             end
             
