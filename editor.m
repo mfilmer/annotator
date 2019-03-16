@@ -4,7 +4,7 @@ classdef editor < handle
     end
     properties
         activeTool = tools.None;        % Which tool is currently in use
-        dragStartPos;           % Starting position of a drag operation
+        dragStartPos = [];      % Starting position of a drag operation
     end
     properties
         parent;         % Direct parent
@@ -29,18 +29,69 @@ classdef editor < handle
             
             this.ax = axes(this.parent, 'Position', [0 0 1 1]);
             imshow(this.image, 'Parent', this.ax);
+            for child = this.ax.Children
+                child.HitTest = 'off';
+            end
+            this.ax.ButtonDownFcn = @(~,~) this.buttonDown_CB();    %# This must come after imshow()
+            this.ax.PickableParts = 'all';
         end
         function delete(~)
             % Clean up annotations
         end
     end
     
+    methods (Access = protected)
+        % Checks for, and returns if found, the mouseed over annotation
+        function h = mouseoverCheck(this)
+            % TODO: implement this. For now it returns nothing
+            h = [];
+        end
+    end
+    
+    % Individual mouse movement handling functions
+    methods (Access = protected)
+        % The None tool handles image panning and annotation selecting
+        function noneMoveOperation(this)
+            % If this.dragStartPos is empty, we are not in a drag and drop
+            % operation. If it isn't empty, we are, which means we are
+            % panning the image
+            if(isempty(this.dragStartPos))
+                % Hover select operation
+            else
+                % Pan operation
+                disp('panning');
+                pos = this.ax.CurrentPoint;
+                xpos = pos(1);
+                ypos = pos(3);
+                delta = this.dragStartPos - [xpos, ypos];
+                this.ax.XLim = this.ax.XLim + delta(1);
+                this.ax.YLim = this.ax.YLim + delta(2);
+            end
+        end
+        
+        function noneClickOperation(this)
+            % If we click on an annotation, do something. Otherwise we
+            % start an image pan operation
+            h = this.mouseoverCheck();
+            if(isempty(h))
+                % Start pan operation
+                pos = this.ax.CurrentPoint;
+                this.dragStartPos = [pos(1), pos(3)];
+            end
+        end
+        
+        function noneReleaseOperation(this)
+            % Finish our pan operation
+            this.dragStartPos = [];
+        end
+    end
+    
+    % External event callback-type functions
     methods
-        % This function should be called from the parent whenever it needs
-        % to refresh. Usually in response to a mouse move event.
-        function refresh(this)
+        % This function should be called from the parent whenever the mouse
+        % moves within the window.
+        function mouseMove(this)
             % Find mouse position on axis
-            pos = this.ax.CurrentPoint;
             switch(this.activeTool)
                 case tools.Pan
                 case tools.Zoom
@@ -52,6 +103,49 @@ classdef editor < handle
                 case tools.SetScale
                 case tools.Scalebar
                 case tools.None
+                    this.noneMoveOperation();
+            end
+        end
+        
+        % Call this function in response to a ButtonDownFcn on the axis
+        function buttonDown_CB(this)
+            disp('button down');
+            switch(this.activeTool)
+                case tools.Pan
+                case tools.Zoom
+                case tools.Crop
+                case tools.Distance
+                case tools.Rectangle
+                case tools.Polygon
+                case tools.Angle
+                case tools.SetScale
+                case tools.Scalebar
+                case tools.None
+                    this.noneClickOperation();
+            end
+        end
+        
+        % Called from parent when mouse button goes up
+        function buttonUp_CB(this)
+            % We only care if we were in a drag and drop operation. So we
+            % return early if we were not
+            if(isempty(this.dragStartPos))
+                return;
+            end
+            
+            % Process end of drag operation
+            switch(this.activeTool)
+                case tools.Pan
+                case tools.Zoom
+                case tools.Crop
+                case tools.Distance
+                case tools.Rectangle
+                case tools.Polygon
+                case tools.Angle
+                case tools.SetScale
+                case tools.Scalebar
+                case tools.None
+                    this.noneReleaseOperation();
             end
         end
         
@@ -107,6 +201,11 @@ classdef editor < handle
             % Update axis limits
             this.ax.XLim = xrange;
             this.ax.YLim = yrange;
+        end
+        
+        % Called to cancel any current tool operation
+        % Does not change the active tool
+        function cancel(this)
         end
         
         % Called to select the active tool

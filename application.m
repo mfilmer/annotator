@@ -38,7 +38,8 @@ classdef application < handle
                 'Position', [X, Y, width, height], ...
                 'ResizeFcn', @(src,eventdata) this.redrawWindow(), ...
                 'WindowButtonMotionFcn', @(~,~) this.mouseMove_CB(), ...
-                'WindowScrollWheelFcn', @(~,eventdata) this.mouseScroll_CB(eventdata));
+                'WindowScrollWheelFcn', @(~,eventdata) this.mouseScroll_CB(eventdata), ...
+                'WindowButtonUpFcn', @(~,~) this.mouseUp_CB());
             this.fileList = fileList(this.window);
             this.fileList.fileOpenCB = @this.openFile_CB;
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
@@ -89,7 +90,14 @@ classdef application < handle
         function mouseMove_CB(this)
             editor = this.getCurrentEditor();
             if(~isempty(editor))
-                editor.refresh();
+                editor.mouseMove();
+            end
+        end
+        
+        function mouseUp_CB(this)
+            editor = this.getCurrentEditor();
+            if(~isempty(editor))
+                editor.buttonUp_CB();
             end
         end
         
