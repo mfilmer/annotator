@@ -28,10 +28,20 @@ classdef application < handle
             width = 1024;
             height = 600;
             
+            % Determine screen size so our window is positioned in the
+            % center of the screen
+            scr = get(0, 'ScreenSize');
+            sWidth = scr(3);
+            sHeight = scr(4);
+            Y = (sHeight - height)/2;
+            X = (sWidth - width)/2;
+            
             % Create UI Elements
             this.window = figure('Position', [X, Y, width, height], 'MenuBar', 'none', ...
-                'ResizeFcn', @(src,eventdata) this.redrawWindow());
+                'ResizeFcn', @(src,eventdata) this.redrawWindow(), ...
+                'Position', [X, Y, width, height]);
             this.fileList = fileList(this.window);
+            this.fileList.fileOpenCB = @this.openFile_CB;
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
             this.tabs = uitab(this.tabGroup, 'Title', 'aoeu');
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
@@ -41,6 +51,9 @@ classdef application < handle
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Rectangle');
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Polygon');
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Angle');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Set Scale');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Scalebar');
+            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'pushbutton', 'String', 'Crop');
             
             % Position UI elements
             this.redrawWindow();
@@ -81,9 +94,12 @@ classdef application < handle
             end
         end
         
-        function h = newButton(this, parent, pos, label)
-            h = uicontrol('Parent', parent, 'String', label, 'Style', 'pushbutton', ...
-                'Position', [pos, this.buttonWidth, this.buttonHeight]);
+        function openFile_CB(this, index, name)
+            this.openFile(name)
+        end
+        
+        function openFile(this, name)
+            disp(['Open ', name ]);
         end
     end
 end
