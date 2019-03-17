@@ -5,8 +5,7 @@ classdef scalebar < distance
             this@distance(ax, point);
             
             % Set the color
-            this.color = [0,1,0];
-            this.h.Color = [0,1,0];
+            this.setColor([0,1,0]);
         end
     end
 end

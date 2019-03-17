@@ -6,7 +6,7 @@ classdef annotation < handle
         handles;    % Array of manipulation handles
         settings;   % Handle for settings dialog
     end
-    properties
+    properties (Access = protected)
         color = [1,0,0];
         fontSize = 20;
         lineWidth = 3;
@@ -103,6 +103,13 @@ classdef annotation < handle
         
         function closeSettings(this)
             this.settings = [];
+        end
+    end
+    
+    % Annotation settings functions
+    methods
+        function setColor(this, color)
+            this.color = color;
         end
     end
     

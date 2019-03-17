@@ -8,7 +8,7 @@ classdef editor < handle
         mouseoverAnnotation;        % Currently moused-over annotation
         panStartPos = [];           % Previous position of a pan operation
         dragHandle = [];            % Handle currently being dragged
-        annotations;                % List of all the annotations
+        annotations;                % Cell arary of all the annotations
     end
     properties
         parent;         % Direct parent
@@ -41,7 +41,8 @@ classdef editor < handle
             this.ax.PickableParts = 'all';
         end
         function delete(this)
-            for annotation = this.annotations
+            for i = 1:length(this.annotations)
+                annotation = this.annotations{i};
                 delete(annotation);
             end
         end
@@ -54,7 +55,8 @@ classdef editor < handle
             ann = [];
             han = [];
             minDist = [];
-            for annotation = this.annotations
+            for i = 1:length(this.annotations)
+                annotation = this.annotations{i};
                 dist = annotation.getDist(pos);
                 if (dist < this.hitDist)
                     if (isempty(minDist))
@@ -186,9 +188,9 @@ classdef editor < handle
                 % First point: create a new distance annotation
                 this.activeAnnotation = distance(this.ax, point);
                 if(isempty(this.annotations))
-                    this.annotations = this.activeAnnotation;
+                    this.annotations = {this.activeAnnotation};
                 else
-                    this.annotations(end+1) = this.activeAnnotation;
+                    this.annotations{end+1} = this.activeAnnotation;
                 end
             else
                 % Second point: set second point
@@ -204,9 +206,9 @@ classdef editor < handle
                 % First point: create a new distance annotation
                 this.activeAnnotation = scalebar(this.ax, point);
                 if(isempty(this.annotations))
-                    this.annotations = this.activeAnnotation;
+                    this.annotations = {this.activeAnnotation};
                 else
-                    this.annotations(end+1) = this.activeAnnotation;
+                    this.annotations{end+1} = this.activeAnnotation;
                 end
             else
                 % Second point: set second point
@@ -227,7 +229,8 @@ classdef editor < handle
                 case tools.Pan
                     pos = this.ax.CurrentPoint;
                     pos = [pos(1), pos(3)];
-                    for annotation = this.annotations()
+                    for i = 1:length(this.annotations)
+                        annotation = this.annotations{i};
                         annotation.getDist(pos);
                     end
                 case tools.Zoom

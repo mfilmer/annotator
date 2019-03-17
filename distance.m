@@ -100,4 +100,16 @@ classdef distance < annotation
             dist = min(dist1, dist2);
         end
     end
+    
+    % Settings functions
+    methods
+        function setColor(this, color)
+            this.setColor@annotation(color);
+            
+            this.h.Color = this.color;
+            if(~isempty(this.text))
+                this.text.Color = this.color;
+            end
+        end
+    end
 end
