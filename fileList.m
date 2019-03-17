@@ -35,7 +35,7 @@ classdef fileList < handle
             this.upDirButton = uicontrol('Parent', this.panel, 'String', 'Up', 'Callback', @(src, eventdata) this.upDir());
             this.openFileButton = uicontrol('Parent', this.panel, 'String', 'Open', 'Callback', @(~, ~) this.openFile());
             this.closeFileButton = uicontrol('Parent', this.panel, 'String', 'Close', 'Callback', @(~, ~) this.closeFile());
-            this.filterBox = uicontrol('Parent', this.panel, 'Style', 'edit', 'String', '.+\..+', 'Callback', @(~, ~) this.refreshLists());
+            this.filterBox = uicontrol('Parent', this.panel, 'Style', 'edit', 'String', '.+\.(png|tif|jpg)', 'Callback', @(~, ~) this.refreshLists());
             this.dirListbox = uicontrol('Parent', this.panel, 'Style', 'listbox', 'Callback', @(~, ~) this.dirItemClick_CB());
             this.fileListbox = uicontrol('Parent', this.panel, 'Style', 'listbox', 'Callback', @(~, ~) this.fileItemClick_CB());
         end

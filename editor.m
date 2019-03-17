@@ -3,12 +3,12 @@ classdef editor < handle
         title = 'Unnamed Micrograph';
     end
     properties
-        activeTool = tools.None;        % Which tool is currently in use
-        activeAnnotation;       % Currently active annotation
-        mouseoverAnnotation;    % Currently moused-over annotation
-        panStartPos = [];      % Starting position of a drag operation
-        dragHandle = [];        % Handle currently being dragged
-        annotations;            % List of all the annotations
+        activeTool = tools.None;    % Which tool is currently in use
+        activeAnnotation;           % Currently active annotation
+        mouseoverAnnotation;        % Currently moused-over annotation
+        panStartPos = [];           % Previous position of a pan operation
+        dragHandle = [];            % Handle currently being dragged
+        annotations;                % List of all the annotations
     end
     properties
         parent;         % Direct parent
@@ -245,20 +245,28 @@ classdef editor < handle
         
         % Call this function in response to a ButtonDownFcn on the axis
         function buttonDown_CB(this, eventdata)
-            switch(this.activeTool)
-                case tools.Pan
-                case tools.Zoom
-                case tools.Crop
-                case tools.Distance
-                    this.distanceClickOperation(eventdata.IntersectionPoint(1:2));
-                case tools.Rectangle
-                case tools.Polygon
-                case tools.Angle
-                case tools.SetScale
-                case tools.Scalebar
-                    this.scalebarClickOperation(eventdata.IntersectionPoint(1:2));
-                case tools.None
-                    this.noneClickOperation();
+            selType = get(gcf, 'selectiontype');
+            switch selType
+                case 'normal'   % Single click
+                    switch(this.activeTool)
+                        case tools.Pan
+                        case tools.Zoom
+                        case tools.Crop
+                        case tools.Distance
+                            this.distanceClickOperation(eventdata.IntersectionPoint(1:2));
+                        case tools.Rectangle
+                        case tools.Polygon
+                        case tools.Angle
+                        case tools.SetScale
+                        case tools.Scalebar
+                            this.scalebarClickOperation(eventdata.IntersectionPoint(1:2));
+                        case tools.None
+                            this.noneClickOperation();
+                    end
+                case 'open'     % Double click
+                    if(~isempty(this.mouseoverAnnotation))
+                        this.mouseoverAnnotation.settingsUI();
+                    end
             end
         end
         

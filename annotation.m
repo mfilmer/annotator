@@ -4,6 +4,7 @@ classdef annotation < handle
         h;          % Primary object
         ax;         % Parent axis
         handles;    % Array of manipulation handles
+        settings;   % Handle for settings dialog
     end
     properties
         color = [1,0,0];
@@ -78,6 +79,31 @@ classdef annotation < handle
             end
             this.handles = [];
         end
+        
+        function settingsUI(this)
+            % If theres already a settings window, raise it
+            if(~isempty(this.settings))
+                figure(this.settings);
+                return;
+            end
+            
+            % There isn't already a window, create a new window
+            pfig = ancestor(this.ax, 'figure');
+            ppos = pfig.Position;
+            px = ppos(1);
+            py = ppos(2);
+            pwidth = ppos(3);
+            pheight = ppos(4);
+            width = 300;
+            height = 300;
+            
+            this.settings = figure('Position', [px + (pwidth-width)/2, py + (pheight-height)/2, width, height], ...
+                'MenuBar', 'none', 'DeleteFcn', @(~,~) this.closeSettings());
+        end
+        
+        function closeSettings(this)
+            this.settings = [];
+        end
     end
     
     methods (Access = protected)
@@ -105,10 +131,6 @@ classdef annotation < handle
         % Distance between two pointsn
         function dist = distToPoint(~, p1, p2)
             dist = sqrt((p2(1) - p1(1))^2 + (p2(2) - p1(2))^2);
-        end
-        
-        function setColor(this, newColor)
-            this.color = newColor;
         end
     end
     
