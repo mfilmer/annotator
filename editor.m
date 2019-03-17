@@ -9,6 +9,7 @@ classdef editor < handle
         panStartPos = [];           % Previous position of a pan operation
         dragHandle = [];            % Handle currently being dragged
         annotations;                % Cell arary of all the annotations
+        scaleBarSettings;           % Struct of scale bar measurement settings
     end
     properties
         parent;         % Direct parent
@@ -23,8 +24,8 @@ classdef editor < handle
         hitDist = 150;   % How far away a mouseover hit is registered
     end
     
-    % Constructors, destructors, etc.
     methods
+        % Constructor
         function this = editor(parent, filename)
             this.parent = parent;
             this.filename = filename;
@@ -39,7 +40,17 @@ classdef editor < handle
             end
             this.ax.ButtonDownFcn = @(~,eventdata) this.buttonDown_CB(eventdata);    %# This must come after imshow()
             this.ax.PickableParts = 'all';
+            
+            % Set up default scale bar settings
+            this.scaleBarSettings.unit = 'nm';
+            this.scaleBarSettings.length = 500;
+            this.scaleBarSettings.color = [0.3,0.3,0.3];
+            this.scaleBarSettings.visible = 1;
+            this.scaleBarSettings.width = 5;
+            this.scaleBarSettings.size = 18;
         end
+        
+        % Destructor
         function delete(this)
             for i = 1:length(this.annotations)
                 annotation = this.annotations{i};

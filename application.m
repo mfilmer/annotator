@@ -99,6 +99,11 @@ classdef application < handle
             end
         end
         
+        % Called when the tab changes
+        function tabChange_CB(this)
+            % Update scale bar settings panel
+        end
+        
         function selectTool_CB(this, src, tool)
             % Check if button is up or down
             if(src.Value)
