@@ -45,13 +45,8 @@ classdef application < handle
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
             
-            % Button panel buttons
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Pan', 'Callback', @(src,~) this.selectTool_CB(src, tools.Pan));
+            % Annotation panel buttons
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Distance', 'Callback', @(src,~) this.selectTool_CB(src, tools.Distance));
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Rectangle', 'Callback', @(src,~) this.selectTool_CB(src, tools.Rectangle));
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Polygon', 'Callback', @(src,~) this.selectTool_CB(src, tools.Polygon));
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Angle', 'Callback', @(src,~) this.selectTool_CB(src, tools.Angle));
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Crop', 'Callback', @(src,~) this.selectTool_CB(src, tools.Crop));
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Set Scale', 'Callback', @(src,~) this.selectTool_CB(src, tools.SetScale));
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Scalebar', 'Callback', @(src,~) this.selectTool_CB(src, tools.Scalebar));
             

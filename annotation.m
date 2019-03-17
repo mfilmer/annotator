@@ -106,6 +106,10 @@ classdef annotation < handle
         function dist = distToPoint(~, p1, p2)
             dist = sqrt((p2(1) - p1(1))^2 + (p2(2) - p1(2))^2);
         end
+        
+        function setColor(this, newColor)
+            this.color = newColor;
+        end
     end
     
     methods (Static)

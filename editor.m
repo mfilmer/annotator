@@ -197,6 +197,24 @@ classdef editor < handle
             end
         end
         
+        % The distance tool
+        function scalebarClickOperation(this, point)
+            % Determine if we are creating the first point or the second
+            if(isempty(this.activeAnnotation))
+                % First point: create a new distance annotation
+                this.activeAnnotation = scalebar(this.ax, point);
+                if(isempty(this.annotations))
+                    this.annotations = this.activeAnnotation;
+                else
+                    this.annotations(end+1) = this.activeAnnotation;
+                end
+            else
+                % Second point: set second point
+                this.activeAnnotation.finishLine(point);
+                this.activeAnnotation = [];
+            end
+        end
+        
     end
     
     % External event callback-type functions
@@ -238,6 +256,7 @@ classdef editor < handle
                 case tools.Angle
                 case tools.SetScale
                 case tools.Scalebar
+                    this.scalebarClickOperation(eventdata.IntersectionPoint(1:2));
                 case tools.None
                     this.noneClickOperation();
             end
