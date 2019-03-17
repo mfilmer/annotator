@@ -2,6 +2,7 @@ classdef distance < annotation
     properties
         text;       % Handle to text element
         textOffset = 50;
+        constraint = constraints.None;
     end
     methods
         function this = distance(ax, point)
@@ -23,6 +24,15 @@ classdef distance < annotation
             y1 = this.h.YData(1);
             x2 = point(1);
             y2 = point(2);
+            
+            % Handle horizontal and vertical constraints
+            switch (this.constraint)
+                case constraints.Horizontal
+                    y2 = y1;
+                case constraints.Vertical
+                    x2 = x1;
+            end
+            
             this.h.XData = [x1,x2];
             this.h.YData = [y1,y2];
             this.points = [x1,y1; x2,y2];
@@ -77,7 +87,24 @@ classdef distance < annotation
         end
         
         function movePoint(this, handle, pos)
-            ind = this.handles == handle;
+            % Get handle index
+            ind = find(this.handles == handle);
+            
+            % Handle horizontal or vertical constraints
+            % We check if the point is invalid. If is is, we snap it to a
+            % valid location.
+            switch (this.constraint)
+                case constraints.Horizontal
+                    if pos(2) ~= this.points(3-ind,2)
+                        handle.move([pos(1), this.points(3-ind,2)]);
+                        return;
+                    end
+                case constraints.Vertical
+                    if pos(1) ~= this.points(3-ind,1)
+                        handle.move([this.points(3-ind,1), pos(2)]);
+                        return;
+                    end
+            end
             
             this.points(ind,:) = reshape(pos, 1, 2);
             
