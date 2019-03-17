@@ -7,13 +7,20 @@ classdef application < handle
         tabs;           % Each tab
         buttonPanel;    % Image editor buttons
         editors;        % Each editor object, one per tab
-        buttons = [];   % Buttons in the button panel, listed from top down
+        buttons = [];   % Annotation buttons in the annotation panel, listed from top down
+        scalePanel;     % Panel holding scale setting controls
+        scaleControls;  % Struct of controls on the scale panel
+        
     end
     properties
         buttonHeight = 25;
+        buttonWidth = 75;
+        editHeight = 22;
         buttonVStep = 25;
         fileListWidth = 250;
         buttonPanelWidth = 150;
+        buttonPanelHeight = 300;
+        scalePanelHeight = 100;
         minWidth = 600;
         minHeight = 300;
     end
@@ -43,11 +50,17 @@ classdef application < handle
             this.fileList.fileOpenCB = @this.openFile_CB;
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
+            this.scalePanel = uipanel(this.window, 'Units', 'pixels');
             
             % Annotation panel buttons
-            this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Distance', 'Callback', @(src,~) this.selectTool_CB(src, tools.Distance));
+            this.buttons = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Distance', 'Callback', @(src,~) this.selectTool_CB(src, tools.Distance));
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Set Scale', 'Callback', @(src,~) this.selectTool_CB(src, tools.SetScale));
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Scalebar', 'Callback', @(src,~) this.selectTool_CB(src, tools.Scalebar));
+            
+            % Scale panel controls. These don't move
+            this.scaleControls.lengthLabel = uicontrol('Parent', this.scalePanel, 'Style', 'text', 'String', 'Length', 'HorizontalAlignment', 'left', 'Position', [2,this.editHeight-6, this.buttonWidth, this.editHeight]);
+            this.scaleControls.lengthBox = uicontrol('Parent', this.scalePanel, 'Style', 'edit', 'String', '500', 'HorizontalAlignment', 'right', 'Position', [2,2,92,this.editHeight]);
+            this.scaleControls.unitRing = uicontrol('Parent', this.scalePanel, 'Style', 'popupmenu', 'String', {'km', 'm', 'mm', 'um', 'nm'}, 'Value', 5, 'Position', [2+92+1,2,50,this.editHeight]);
             
             % Position UI elements
             this.redrawWindow();
@@ -70,14 +83,19 @@ classdef application < handle
                 
                 % Move elements
                 this.fileList.setPosition([0, 0, this.fileListWidth, height]);
-                set(this.tabGroup, 'Position', [this.fileListWidth, 0, width-this.fileListWidth-this.buttonPanelWidth, height]);
-                set(this.buttonPanel, 'Position', [width-this.buttonPanelWidth,0,this.buttonPanelWidth, height]);
+                this.tabGroup.Position = [this.fileListWidth, 0, width-this.fileListWidth-this.buttonPanelWidth, height];
+                this.buttonPanel.Position = [width-this.buttonPanelWidth,height-this.buttonPanelHeight,this.buttonPanelWidth, this.buttonPanelHeight];
+                this.scalePanel.Position = [width-this.buttonPanelWidth,0,this.buttonPanelWidth, this.scalePanelHeight];
                 
                 % Position button panel buttons
                 for i = 1:length(this.buttons)
                     button = this.buttons(i);
-                    set(button, 'Position', [0, height-this.buttonHeight-this.buttonVStep*(i-1)-2, this.buttonPanelWidth-3, this.buttonHeight]);
+                    button.Position = [0, this.buttonPanelHeight-this.buttonHeight-this.buttonVStep*(i-1)-2, this.buttonPanelWidth-3, this.buttonHeight];
                 end
+                
+                % Scale panel controls
+                % These remain in a constant position on their panel so
+                % there positions are given at creation
             end
         end
         
@@ -86,7 +104,7 @@ classdef application < handle
             if(src.Value)
                 % Button is down: reset all other buttons
                 for button = this.buttons
-                    if (~button == src)
+                    if (button ~= src)
                         button.Value = 0;
                     end
                 end
@@ -140,10 +158,6 @@ classdef application < handle
             else
                 this.editors(end+1) = editor(t, fullname);
             end
-            
-            % ???
-            
-            % Profit
         end
     end
     
