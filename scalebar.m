@@ -1,8 +1,8 @@
 classdef scalebar < distance
     methods
-        function this = scalebar(ax, point)
+        function this = scalebar(editor, ax, point)
             % Call superclass constructor
-            this@distance(ax, point);
+            this@distance(editor, ax, point);
             
             % Set the color
             this.setColor([0,1,0]);

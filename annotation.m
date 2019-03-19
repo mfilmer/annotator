@@ -1,5 +1,6 @@
 classdef annotation < handle
     properties
+        editor;     % The editor this is a part of
         points;     % List of manipulation points
         h;          % Primary object
         ax;         % Parent axis

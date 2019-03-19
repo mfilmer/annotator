@@ -5,7 +5,8 @@ classdef distance < annotation
         constraint = constraints.None;
     end
     methods
-        function this = distance(ax, point)
+        function this = distance(editor, ax, point)
+            this.editor = editor;
             this.ax = ax;
             this.h = line(this.ax, point(1), point(2));
             this.h.Color = this.color;
@@ -88,25 +89,40 @@ classdef distance < annotation
         
         function movePoint(this, handle, pos)
             % Get handle index
-            ind = find(this.handles == handle);
+            thisHandleInd = find(this.handles == handle);
+            otherHandleInd = 3 - thisHandleInd;
             
-            % Handle horizontal or vertical constraints
-            % We check if the point is invalid. If is is, we snap it to a
-            % valid location.
-            switch (this.constraint)
-                case constraints.Horizontal
-                    if pos(2) ~= this.points(3-ind,2)
-                        handle.move([pos(1), this.points(3-ind,2)]);
-                        return;
-                    end
-                case constraints.Vertical
-                    if pos(1) ~= this.points(3-ind,1)
-                        handle.move([this.points(3-ind,1), pos(2)]);
-                        return;
-                    end
+            % Determine if shift key is up or down
+            shiftState = this.editor.application.keyStatus.shift;
+            if shiftState
+                % Determine if we are closer to a horizontal or vertical
+                dx = this.points(otherHandleInd, 1) - this.points(thisHandleInd, 1);
+                dy = this.points(otherHandleInd, 2) - this.points(thisHandleInd, 2);
+                
+                if abs(dx) < abs(dy)
+                    con = constraints.Vertical;
+                else
+                    con = constraints.Horizontal;
+                end
+                
+                % Handle horizontal or vertical constraints
+                % We check if the point is invalid. If is is, we snap it to a
+                % valid location.
+                switch (con)
+                    case constraints.Horizontal
+                        if pos(2) ~= this.points(otherHandleInd,2)
+                            handle.move([pos(1), this.points(otherHandleInd,2)]);
+                            return;
+                        end
+                    case constraints.Vertical
+                        if pos(1) ~= this.points(otherHandleInd,1)
+                            handle.move([this.points(otherHandleInd,1), pos(2)]);
+                            return;
+                        end
+                end
             end
             
-            this.points(ind,:) = reshape(pos, 1, 2);
+            this.points(thisHandleInd,:) = reshape(pos, 1, 2);
             
             % Update the line display
             this.updateLine();

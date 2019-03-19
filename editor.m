@@ -12,6 +12,7 @@ classdef editor < handle
         scaleBarSettings;           % Struct of scale bar measurement settings
     end
     properties
+        application;    % Main application
         parent;         % Direct parent
         ax;             % Axes for displaying image
         image;          % Image data
@@ -26,7 +27,8 @@ classdef editor < handle
     
     methods
         % Constructor
-        function this = editor(parent, filename)
+        function this = editor(application, parent, filename)
+            this.application = application;
             this.parent = parent;
             this.filename = filename;
             this.image = imread(this.filename);
@@ -197,7 +199,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new distance annotation
-                this.activeAnnotation = distance(this.ax, point);
+                this.activeAnnotation = distance(this, this.ax, point);
                 if(isempty(this.annotations))
                     this.annotations = {this.activeAnnotation};
                 else
@@ -215,7 +217,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new distance annotation
-                this.activeAnnotation = scalebar(this.ax, point);
+                this.activeAnnotation = scalebar(this, this.ax, point);
                 if(isempty(this.annotations))
                     this.annotations = {this.activeAnnotation};
                 else

@@ -10,7 +10,7 @@ classdef application < handle
         buttons = [];   % Annotation buttons in the annotation panel, listed from top down
         scalePanel;     % Panel holding scale setting controls
         scaleControls;  % Struct of controls on the scale panel
-        
+        keyStatus;      % Struct containing desired modifier key states
     end
     properties
         buttonHeight = 25;
@@ -32,6 +32,9 @@ classdef application < handle
             width = 1024;
             height = 600;
             
+            % Initialize key states
+            this.keyStatus.shift = 0;
+            
             % Determine screen size so our window is positioned in the
             % center of the screen
             scr = get(0, 'ScreenSize');
@@ -45,7 +48,9 @@ classdef application < handle
                 'ResizeFcn', @(src,eventdata) this.redrawWindow(), ...
                 'WindowButtonMotionFcn', @(~,~) this.mouseMove_CB(), ...
                 'WindowScrollWheelFcn', @(~,eventdata) this.mouseScroll_CB(eventdata), ...
-                'WindowButtonUpFcn', @(~,~) this.mouseUp_CB());
+                'WindowButtonUpFcn', @(~,~) this.mouseUp_CB(), ...
+                'WindowKeyPressFcn', @(~,eventdata) this.keyChange_CB(eventdata.Key, 1), ...
+                'WindowKeyReleaseFcn', @(~,eventdata) this.keyChange_CB(eventdata.Key, 0));
             this.fileList = fileList(this.window);
             this.fileList.fileOpenCB = @this.openFile_CB;
             this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
@@ -96,6 +101,13 @@ classdef application < handle
                 % Scale panel controls
                 % These remain in a constant position on their panel so
                 % there positions are given at creation
+            end
+        end
+        
+        function keyChange_CB(this, key, state)
+            switch key
+                case 'shift'
+                    this.keyStatus.shift = state;
             end
         end
         
@@ -159,9 +171,9 @@ classdef application < handle
             
             % Create new editor for the tab
             if(isempty(this.editors))
-                this.editors = editor(t, fullname);
+                this.editors = editor(this, t, fullname);
             else
-                this.editors(end+1) = editor(t, fullname);
+                this.editors(end+1) = editor(this, t, fullname);
             end
         end
     end
