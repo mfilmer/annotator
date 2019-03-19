@@ -12,7 +12,7 @@ classdef application < handle
         scaleControls;  % Struct of controls on the scale panel
         keyStatus;      % Struct containing desired modifier key states
     end
-    properties
+    properties % UI element dimensions
         buttonHeight = 25;
         buttonWidth = 75;
         editHeight = 22;
@@ -23,6 +23,10 @@ classdef application < handle
         scalePanelHeight = 100;
         minWidth = 600;
         minHeight = 300;
+    end
+    properties % Scale settings
+        scaleBarLength = 500;
+        scaleBarUnit = 5;
     end
     methods
         function this = application()
@@ -64,13 +68,14 @@ classdef application < handle
             
             % Scale panel controls. These don't move
             this.scaleControls.lengthLabel = uicontrol('Parent', this.scalePanel, 'Style', 'text', 'String', 'Length', 'HorizontalAlignment', 'left', 'Position', [2,this.editHeight-6, this.buttonWidth, this.editHeight]);
-            this.scaleControls.lengthBox = uicontrol('Parent', this.scalePanel, 'Style', 'edit', 'String', '500', 'HorizontalAlignment', 'right', 'Position', [2,2,92,this.editHeight]);
-            this.scaleControls.unitRing = uicontrol('Parent', this.scalePanel, 'Style', 'popupmenu', 'String', {'km', 'm', 'mm', 'um', 'nm'}, 'Value', 5, 'Position', [2+92+1,2,50,this.editHeight]);
+            this.scaleControls.lengthBox = uicontrol('Parent', this.scalePanel, 'Style', 'edit', 'String', num2str(this.scaleBarLength), 'HorizontalAlignment', 'right', 'Position', [2,2,92,this.editHeight], 'Callback', @(s,e) this.updateScale_CB(s,e));
+            this.scaleControls.unitRing = uicontrol('Parent', this.scalePanel, 'Style', 'popupmenu', 'String', {'km', 'm', 'mm', 'um', 'nm'}, 'Value', this.scaleBarUnit, 'Position', [2+92+1,2,50,this.editHeight], 'Callback', @(s,e) this.updateScale_CB(s,e));
             
             % Position UI elements
             this.redrawWindow();
         end
         
+        % Called to reposition all the UI elements in the figure
         function redrawWindow(this)
             if(~isempty(this.window))
                 % Get window location and dimensions
@@ -102,6 +107,9 @@ classdef application < handle
                 % These remain in a constant position on their panel so
                 % there positions are given at creation
             end
+        end
+        
+        function updateScale_CB(this, source, eventdata)
         end
         
         function keyChange_CB(this, key, state)
@@ -186,6 +194,13 @@ classdef application < handle
                 selTabIndex = this.tabGroup.SelectedTab == this.tabGroup.Children;
                 editor = this.editors(selTabIndex);
             end
+        end
+    end
+    
+    methods (Static)
+        % Converts an index into the scale bar unit array to a factor
+        function factor = scaleUnitIndexToFactor(index)
+            factor = -(index-2) * 3;
         end
     end
 end
