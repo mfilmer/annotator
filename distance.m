@@ -5,9 +5,8 @@ classdef distance < annotation
         constraint = constraints.None;
     end
     methods
-        function this = distance(editor, ax, point)
-            this.editor = editor;
-            this.ax = ax;
+        function this = distance(editor, ax, scale, point)
+            this = this@annotation(editor, ax, scale);
             this.h = line(this.ax, point(1), point(2));
             this.h.Color = this.color;
             this.h.LineWidth = this.lineWidth;
@@ -39,6 +38,13 @@ classdef distance < annotation
             this.points = [x1,y1; x2,y2];
             this.text = text('Color', this.color, 'FontSize', this.fontSize, ...
                 'HorizontalAlignment', 'center');     %#ok
+            this.updateMeasurement();
+        end
+        
+        % Called to update the image scale. This should update displayed
+        % lengths to match the scale
+        function setScale(this, scale)
+            this.scale = scale;
             this.updateMeasurement();
         end
         
@@ -76,14 +82,15 @@ classdef distance < annotation
             dy = this.textOffset * cos(angle * pi/180);
             
             this.text.Position = [xm-dx, ym-dy, 0];
-            [str, factor] = annotation.num2str(len);
-            prefix = annotation.getPrefix(factor);
-            if (isempty(prefix))
-                this.text.String = str;
-            else
-                this.text.String = [str ' ' prefix];
-            end
+            %[str, factor] = annotation.num2str(len);
+            %prefix = annotation.getPrefix(factor);
+            %if (isempty(prefix))
+            %    this.text.String = str;
+            %else
+            %    this.text.String = [str ' ' prefix];
+            %end
             
+            this.text.String = this.dispLen(len, 3);
             this.text.Rotation = angle;
         end
         

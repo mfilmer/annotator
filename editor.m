@@ -9,7 +9,6 @@ classdef editor < handle
         panStartPos = [];           % Previous position of a pan operation
         dragHandle = [];            % Handle currently being dragged
         annotations;                % Cell arary of all the annotations
-        scaleBarSettings;           % Struct of scale bar measurement settings
     end
     properties
         application;    % Main application
@@ -24,7 +23,11 @@ classdef editor < handle
         zoomStep = 0.1; % How far to zoom on each scroll step (fraction of 1)
         hitDist = 150;   % How far away a mouseover hit is registered
     end
-    
+    properties % Scale settings
+        imageScale = struct('realLength', 500, 'pixelLength', 500, ...
+            'unitIndex', 5, 'units', {{'km', 'm', 'mm', 'um', 'nm'}}, ...
+            'unitFactor', [3, 0, -3, -6, -9]);
+    end
     methods
         % Constructor
         function this = editor(application, parent, filename)
@@ -42,14 +45,6 @@ classdef editor < handle
             end
             this.ax.ButtonDownFcn = @(~,eventdata) this.buttonDown_CB(eventdata);    %# This must come after imshow()
             this.ax.PickableParts = 'all';
-            
-            % Set up default scale bar settings
-            this.scaleBarSettings.unit = 'nm';
-            this.scaleBarSettings.length = 500;
-            this.scaleBarSettings.color = [0.3,0.3,0.3];
-            this.scaleBarSettings.visible = 1;
-            this.scaleBarSettings.width = 5;
-            this.scaleBarSettings.size = 18;
         end
         
         % Destructor
@@ -199,7 +194,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new distance annotation
-                this.activeAnnotation = distance(this, this.ax, point);
+                this.activeAnnotation = distance(this, this.ax, this.imageScale, point);
                 if(isempty(this.annotations))
                     this.annotations = {this.activeAnnotation};
                 else
@@ -217,7 +212,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new distance annotation
-                this.activeAnnotation = scalebar(this, this.ax, point);
+                this.activeAnnotation = scalebar(this, this.ax, this.imageScale, point);
                 if(isempty(this.annotations))
                     this.annotations = {this.activeAnnotation};
                 else
@@ -379,10 +374,18 @@ classdef editor < handle
             % Set the new tool
             this.activeTool = tool;
         end
+        
+        % Converts an index into the scale bar unit array to a factor
+        function factor = scaleUnitIndexToFactor(this, index)
+            factor = this.imageScale.unitFactor(index);
+        end
+        
+        % Called to refresh the scale parameters
+        function updateScale(this)
+            for i = 1:length(this.annotations)
+                annotation = this.annotations{i};
+                annotation.setScale(this.imageScale);
+            end
+        end
     end
-    
-    %events
-    %    Zoom
-    %    ChangeScale
-    %end
 end

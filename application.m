@@ -24,10 +24,6 @@ classdef application < handle
         minWidth = 600;
         minHeight = 300;
     end
-    properties % Scale settings
-        scaleBarLength = 500;
-        scaleBarUnit = 5;
-    end
     methods
         function this = application()
             % Set window dimensions
@@ -67,9 +63,9 @@ classdef application < handle
             this.buttons(end+1) = uicontrol('Parent', this.buttonPanel, 'Style', 'togglebutton', 'String', 'Scalebar', 'Callback', @(src,~) this.selectTool_CB(src, tools.Scalebar));
             
             % Scale panel controls. These don't move
-            this.scaleControls.lengthLabel = uicontrol('Parent', this.scalePanel, 'Style', 'text', 'String', 'Length', 'HorizontalAlignment', 'left', 'Position', [2,this.editHeight-6, this.buttonWidth, this.editHeight]);
-            this.scaleControls.lengthBox = uicontrol('Parent', this.scalePanel, 'Style', 'edit', 'String', num2str(this.scaleBarLength), 'HorizontalAlignment', 'right', 'Position', [2,2,92,this.editHeight], 'Callback', @(s,e) this.updateScale_CB(s,e));
-            this.scaleControls.unitRing = uicontrol('Parent', this.scalePanel, 'Style', 'popupmenu', 'String', {'km', 'm', 'mm', 'um', 'nm'}, 'Value', this.scaleBarUnit, 'Position', [2+92+1,2,50,this.editHeight], 'Callback', @(s,e) this.updateScale_CB(s,e));
+            this.scaleControls.lengthLabel = uicontrol('Parent', this.scalePanel, 'Style', 'text', 'String', 'Length', 'HorizontalAlignment', 'left', 'Position', [2,this.editHeight-6, this.buttonWidth, this.editHeight], 'enable', 'off');
+            this.scaleControls.lengthBox = uicontrol('Parent', this.scalePanel, 'Style', 'edit', 'HorizontalAlignment', 'right', 'Position', [2,2,92,this.editHeight], 'enable', 'off', 'Callback', @(s,e) this.updateScale_CB(s,e));
+            this.scaleControls.unitRing = uicontrol('Parent', this.scalePanel, 'Style', 'popupmenu', 'Position', [2+92+1,2,50,this.editHeight], 'string', ' ', 'enable', 'off', 'Callback', @(s,e) this.updateScale_CB(s,e));
             
             % Position UI elements
             this.redrawWindow();
@@ -194,13 +190,6 @@ classdef application < handle
                 selTabIndex = this.tabGroup.SelectedTab == this.tabGroup.Children;
                 editor = this.editors(selTabIndex);
             end
-        end
-    end
-    
-    methods (Static)
-        % Converts an index into the scale bar unit array to a factor
-        function factor = scaleUnitIndexToFactor(index)
-            factor = -(index-2) * 3;
         end
     end
 end

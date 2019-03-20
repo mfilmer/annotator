@@ -6,6 +6,7 @@ classdef annotation < handle
         ax;         % Parent axis
         handles;    % Array of manipulation handles
         settings;   % Handle for settings dialog
+        scale;
     end
     properties (Access = protected)
         color = [1,0,0];
@@ -25,6 +26,14 @@ classdef annotation < handle
     end
     
     methods
+        % Constructor
+        function this = annotation(ed, ax, scale)
+            this.editor = ed;
+            this.ax = ax;
+            this.scale = scale;
+        end
+        
+        
         % Destructor
         function delete(this)
             for handle = this.handles
@@ -58,7 +67,7 @@ classdef annotation < handle
             end
             
             % Find closest hit
-            dists(dists < 0) = max(dists)*1.1;  
+            dists(dists < 0) = max(dists)*1.1;
             han = this.handles(dists == min(dists));
             han = han(1);
         end
@@ -105,6 +114,37 @@ classdef annotation < handle
         function closeSettings(this)
             this.settings = [];
         end
+        
+        function setScale(~, ~)
+        end
+        
+        % Converts a number into a pixel length into a displayable distance
+        % using the scaling parameters in this.scale;
+        function str = dispLen(this, dist, nDigits)
+            % Work with sorted factors
+            [factors, unsortedIndices] = sort(this.scale.unitFactor, 'descend');
+            
+            % Find the largest factor that gives us a value >= 1
+            for i = 1:length(factors)
+                factor = factors(i);
+                scaledNum = dist / 10^factor;
+                if scaledNum >= 1
+                    break;
+                end
+            end
+            
+            % Determine number of decimal places
+            nDecimals = 0;
+            while(scaledNum < 10^(nDigits - nDecimals - 1))
+                nDecimals = nDecimals + 1;
+            end
+            
+            % Get number as a string
+            numstr = num2str(scaledNum, ['%0.' num2str(nDecimals) 'f']);
+            
+            % Get fully formatted string
+            str = [numstr ' ' this.scale.units{unsortedIndices(i)}];
+        end
     end
     
     % Annotation settings functions
@@ -114,7 +154,7 @@ classdef annotation < handle
         end
     end
     
-    methods (Access = protected)
+    methods (Static)
         % Distance from a point to a line that goes through the two points
         % specified in xs and ys
         function dist = distToLine(xs, ys, point)
@@ -136,49 +176,9 @@ classdef annotation < handle
             dist = abs(a*px + b*py + c) / sqrt(a^2 + b^2);
         end
         
-        % Distance between two pointsn
-        function dist = distToPoint(~, p1, p2)
+        % Distance between two points
+        function dist = distToPoint(p1, p2)
             dist = sqrt((p2(1) - p1(1))^2 + (p2(2) - p1(2))^2);
-        end
-    end
-    
-    methods (Static)
-        % Converts a number into a string in engineering notation
-        function [str,factor] = num2str(dist)
-            factor = 0;
-            while(dist >= 1000)
-                factor = factor + 3;
-                dist = dist / 1000;
-            end
-            while(dist < 1)
-                factor = factor - 3;
-                dist = dist * 1000;
-            end
-            
-            if (dist >= 100)
-                str = num2str(dist, '%0.0f');
-            elseif (dist >= 10)
-                str = num2str(dist, '%0.1f');
-            else
-                str = num2str(dist, '%0.2f');
-            end
-        end
-        
-        function prefix = getPrefix(factor)
-            switch factor
-                case 3
-                    prefix = 'k';
-                case -3
-                    prefix = 'm';
-                case -6
-                    prefix = 'u';
-                case -9
-                    prefix = 'n';
-                case -12
-                    prefix = 'p';
-                otherwise
-                    prefix = '';
-            end
         end
     end
 end
