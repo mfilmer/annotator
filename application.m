@@ -115,6 +115,8 @@ classdef application < handle
             
             % Tell the editor a change occured
             editor.updateScale();
+            
+            editor.imageScale
         end
         
         function keyChange_CB(this, key, state)
@@ -133,7 +135,7 @@ classdef application < handle
             
             % Copy scale settings from editor
             editor = this.getCurrentEditor();
-            this.scaleControls.lengthBox.String = num2str(editor.imageScale.realLength * editor.imageScale.unitFactor(editor.imageScale.unitIndex));
+            this.scaleControls.lengthBox.String = num2str(editor.imageScale.realLength, 6);
             this.scaleControls.unitRing.String = editor.imageScale.units;
             this.scaleControls.unitRing.Value = editor.imageScale.unitIndex;
         end

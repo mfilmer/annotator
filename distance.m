@@ -37,7 +37,7 @@ classdef distance < annotation
             this.h.YData = [y1,y2];
             this.points = [x1,y1; x2,y2];
             this.text = text('Color', this.color, 'FontSize', this.fontSize, ...
-                'HorizontalAlignment', 'center');     %#ok
+                'HorizontalAlignment', 'center', 'HitTest', 'off');     %#ok
             this.updateMeasurement();
         end
         
