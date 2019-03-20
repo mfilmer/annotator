@@ -213,7 +213,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new scale annotation
-                this.activeAnnotation = scalebar(this, this.ax, point);
+                this.activeAnnotation = scalemeasure(this, this.ax, point);
                 if(~isempty(this.scaleAnnotation))
                     % Existing scale annotation: delete it
                     for index = 1:length(this.annotations)

@@ -5,8 +5,9 @@ classdef aHandle < handle
         rect;       % Rectangle handle
         parent;     % Parent annotation
     end
-    properties
+    properties (Access = protected)
         size = 40;
+        color = [0,0,1];
     end
     methods
         function this = aHandle(parent, ax, pos)
@@ -18,7 +19,7 @@ classdef aHandle < handle
             x = pos(1) - w/2;
             y = pos(2) - h/2;
             this.rect = rectangle(this.ax, 'Position', [x, y, w, h], 'HitTest', 'off');
-            this.rect.EdgeColor = [0,0,1];
+            this.rect.EdgeColor = this.color;
         end
         
         % Destructor
@@ -26,7 +27,7 @@ classdef aHandle < handle
             delete(this.rect);
         end
         
-        % Return distance to a hit, or empty if not a hit
+        % Return distance to a hit, or -1 if not a hit
         function hit = hitCheck(this, pos)
             % Default return value: no hit
             hit = -1;
@@ -39,8 +40,10 @@ classdef aHandle < handle
             end
         end
         
-        % Called when a user moves the handle
-        function move(this, pos)
+        % Called by parent to indicate that the parent is moving a handle.
+        % Unlike aHandle.move() this does not trigger a movement of the
+        % parent.
+        function redrawAt(this, pos)
             % Update our position
             this.position = pos;
             
@@ -50,9 +53,23 @@ classdef aHandle < handle
             x = pos(1) - w/2;
             y = pos(2) - h/2;
             this.rect.Position = [x, y, w, h];
+        end
+        
+        % Called when a user moves the handle
+        function move(this, pos)
+            % Store old position
+            oldPos = this.position;
+            
+            % Update the position
+            this.redrawAt(pos);
             
             % Tell the parent this handle moved
-            this.parent.movePoint(this, pos);
+            this.parent.movePoint(this, pos, oldPos);
+        end
+        
+        function setColor(this, color)
+            this.color = color;
+            this.rect.EdgeColor = color;
         end
     end
 end

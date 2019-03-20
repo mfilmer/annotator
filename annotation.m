@@ -43,9 +43,10 @@ classdef annotation < handle
         % Return a handle at position. If more than one is at the position
         % then return the closest. If none are at the position, return
         % empty
-        function han = getHandle(this, pos)
+        function [han, dist] = getHandle(this, pos)
             % Default return value is empty
             han = [];
+            dist = [];
             
             % We don't have to check anything if there aren't any handles
             if (isempty(this.handles))
@@ -66,7 +67,8 @@ classdef annotation < handle
             
             % Find closest hit
             dists(dists < 0) = max(dists)*1.1;
-            han = this.handles(dists == min(dists));
+            dist = min(dists);
+            han = this.handles(dists == dist);
             han = han(1);
         end
         
@@ -86,6 +88,16 @@ classdef annotation < handle
                 delete(handle);
             end
             this.handles = [];
+        end
+        
+        % Called to reposition handles
+        function fixHandlePositions(this)
+            if (~isempty(this.handles))
+                for i = 1:length(this.handles)
+                    point = this.points(i,:);
+                    this.handles(i).redrawAt(point);
+                end
+            end
         end
         
         function settingsUI(this)

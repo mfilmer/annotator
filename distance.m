@@ -3,6 +3,7 @@ classdef distance < annotation
         text;       % Handle to text element
         textOffset = 50;
         constraint = constraints.None;
+        centerHandle;
     end
     methods
         function this = distance(editor, ax, point)
@@ -41,14 +42,73 @@ classdef distance < annotation
             this.updateMeasurement();
         end
         
+        function enableHandles(this)
+            % Call parent
+            enableHandles@annotation(this);
+            
+            % Enable center handle
+            x1 = this.points(1,1);
+            x2 = this.points(2,1);
+            y1 = this.points(1,2);
+            y2 = this.points(2,2);
+            xavg = (x2+x1)/2;
+            yavg = (y2+y1)/2;
+            this.centerHandle = aHandle(this, this.ax, [xavg, yavg]);
+            this.centerHandle.setColor([0,1,0]);
+        end
+        
+        function disableHandles(this)
+            % Call parent
+            disableHandles@annotation(this);
+            
+            % Disable center handle
+            delete(this.centerHandle);
+            this.centerHandle = [];
+        end
+        
+        function [han, dist] = getHandle(this, pos)
+            % Call parent
+            [han, dist] = getHandle@annotation(this, pos);
+            
+            % Check if the center handle beats this handle
+            if(~isempty(this.centerHandle))
+                cenDist = this.centerHandle.hitCheck(pos);
+                if (cenDist ~= -1)
+                    if (isempty(dist) || (cenDist < dist))
+                        dist = cenDist;
+                        han = this.centerHandle;
+                    end
+                end
+            end
+        end
+        
         % Called to force a redraw of the line
         function updateLine(this)
-            % Just move the two points
+            % Move the two points
             this.h.XData = this.points(:,1)';
             this.h.YData = this.points(:,2)';
             
             % Also update the text
             this.updateMeasurement();
+            
+            % Update handle positions
+            this.fixHandlePositions();
+        end
+        
+        function fixHandlePositions(this)
+            % Call superclass
+            fixHandlePositions@annotation(this);
+            
+            % Fix center handle position
+            if(~isempty(this.centerHandle))
+                x1 = this.points(1,1);
+                x2 = this.points(2,1);
+                y1 = this.points(1,2);
+                y2 = this.points(2,2);
+                xavg = (x2+x1)/2;
+                yavg = (y2+y1)/2;
+                this.centerHandle.redrawAt([xavg, yavg]);
+            end
         end
         
         function scaleChanged(this)
@@ -83,8 +143,28 @@ classdef distance < annotation
             this.text.Rotation = angle;
         end
         
-        function movePoint(this, handle, pos)
-            % Get handle index
+        function movePoint(this, handle, pos, oldPos)
+            % Determine if this is the center handle. If it is, take care
+            % of it and skip the rest of the function
+            if (handle == this.centerHandle)
+                % Calculate dx and dy
+                dx = pos(1) - oldPos(1);
+                dy = pos(2) - oldPos(2);
+                
+                % Move each point
+                for i = 1:size(this.points,1)
+                    this.points(i,:) = this.points(i,:) + [dx, dy];
+                end
+                
+                % Redraw the line
+                this.updateLine();
+                
+                % Return early, we are done
+                return;
+            end
+            
+            
+            % It wasn't the center handle, must be in the array: Get handle index
             thisHandleInd = find(this.handles == handle);
             otherHandleInd = 3 - thisHandleInd;
             
@@ -135,8 +215,12 @@ classdef distance < annotation
             dist1 = this.distToPoint(p1, point);
             dist2 = this.distToPoint(p2, point);
             
+            % Calculate distance to center
+            pc = [(p1(1)+p2(1))/2, (p1(2)+p2(2))/2];
+            distCen = this.distToPoint(pc, point);
+            
             % Return min distance
-            dist = min(dist1, dist2);
+            dist = min([dist1, dist2, distCen]);
         end
     end
     

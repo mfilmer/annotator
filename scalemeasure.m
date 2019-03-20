@@ -1,15 +1,28 @@
-classdef scalebar < distance
+classdef scalemeasure < distance
     properties
         updateCallback;
         pixlen;
     end
     methods
-        function this = scalebar(editor, ax, point)
+        function this = scalemeasure(editor, ax, point)
             % Call superclass constructor
             this@distance(editor, ax, point);
             
             % Set the color
             this.setColor([0,1,0]);
+        end
+        
+        function finishLine(this, point)
+            % Call superclass
+            finishLine@distance(this, point);
+            
+            % Update editor's scale
+            x1 = this.h.XData(1);
+            x2 = this.h.XData(2);
+            y1 = this.h.YData(1);
+            y2 = this.h.YData(2);
+            this.editor.imageScale.pixelLength = sqrt((x2-x1)^2 + (y2-y1)^2);
+            this.editor.updateScale();
         end
         
         % Called to force a redraw of the text measurement
@@ -36,13 +49,13 @@ classdef scalebar < distance
             dy = this.textOffset * cos(angle * pi/180);
             
             this.text.Position = [xm-dx, ym-dy, 0];
-            this.text.String = num2str(len, 3);
+            this.text.String = [num2str(len, 3), ' px'];
             this.text.Rotation = angle;
         end
         
-        function movePoint(this, handle, pos)
+        function movePoint(this, handle, pos, oldPos)
             % Call superclass function
-            movePoint@distance(this, handle, pos);
+            movePoint@distance(this, handle, pos, oldPos);
             
             % Update scale settings
             x1 = this.h.XData(1);
