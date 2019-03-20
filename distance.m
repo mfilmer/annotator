@@ -5,8 +5,8 @@ classdef distance < annotation
         constraint = constraints.None;
     end
     methods
-        function this = distance(editor, ax, scale, point)
-            this = this@annotation(editor, ax, scale);
+        function this = distance(editor, ax, point)
+            this = this@annotation(editor, ax);
             this.h = line(this.ax, point(1), point(2));
             this.h.Color = this.color;
             this.h.LineWidth = this.lineWidth;
@@ -41,13 +41,6 @@ classdef distance < annotation
             this.updateMeasurement();
         end
         
-        % Called to update the image scale. This should update displayed
-        % lengths to match the scale
-        function setScale(this, scale)
-            this.scale = scale;
-            this.updateMeasurement();
-        end
-        
         % Called to force a redraw of the line
         function updateLine(this)
             % Just move the two points
@@ -55,6 +48,10 @@ classdef distance < annotation
             this.h.YData = this.points(:,2)';
             
             % Also update the text
+            this.updateMeasurement();
+        end
+        
+        function scaleChanged(this)
             this.updateMeasurement();
         end
         

@@ -53,7 +53,7 @@ classdef application < handle
                 'WindowKeyReleaseFcn', @(~,eventdata) this.keyChange_CB(eventdata.Key, 0));
             this.fileList = fileList(this.window);
             this.fileList.fileOpenCB = @this.openFile_CB;
-            this.tabGroup = uitabgroup(this.window, 'Units', 'pixels');
+            this.tabGroup = uitabgroup(this.window, 'Units', 'pixels', 'SelectionChangedFcn', @(~,~) this.tabChange_CB());
             this.buttonPanel = uipanel(this.window, 'Units', 'pixels');
             this.scalePanel = uipanel(this.window, 'Units', 'pixels');
             
@@ -105,7 +105,15 @@ classdef application < handle
             end
         end
         
-        function updateScale_CB(this, source, eventdata)
+        % Called whenever elements in the scale controls panel change
+        function updateScale_CB(this, ~, ~)
+            % Update the elements in the editor's scale struct
+            editor = this.getCurrentEditor();
+            editor.imageScale.unitIndex = this.scaleControls.unitRing.Value;
+            editor.imageScale.realLength = str2double(this.scaleControls.lengthBox.String);
+            
+            % Tell the editor a change occured
+            editor.updateScale();
         end
         
         function keyChange_CB(this, key, state)
@@ -117,7 +125,16 @@ classdef application < handle
         
         % Called when the tab changes
         function tabChange_CB(this)
-            % Update scale bar settings panel
+            % Enable and update scale bar settings panel
+            this.scaleControls.lengthLabel.Enable = 'on';
+            this.scaleControls.lengthBox.Enable = 'on';
+            this.scaleControls.unitRing.Enable = 'on';
+            
+            % Copy scale settings from editor
+            editor = this.getCurrentEditor();
+            this.scaleControls.lengthBox.String = num2str(editor.imageScale.realLength * editor.imageScale.unitFactor(editor.imageScale.unitIndex));
+            this.scaleControls.unitRing.String = editor.imageScale.units;
+            this.scaleControls.unitRing.Value = editor.imageScale.unitIndex;
         end
         
         function selectTool_CB(this, src, tool)
@@ -179,6 +196,10 @@ classdef application < handle
             else
                 this.editors(end+1) = editor(this, t, fullname);
             end
+            
+            % Call the cab changed callback to properly update some UI
+            % elements
+            this.tabChange_CB();
         end
     end
     

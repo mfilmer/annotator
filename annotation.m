@@ -6,7 +6,6 @@ classdef annotation < handle
         ax;         % Parent axis
         handles;    % Array of manipulation handles
         settings;   % Handle for settings dialog
-        scale;
     end
     properties (Access = protected)
         color = [1,0,0];
@@ -27,10 +26,9 @@ classdef annotation < handle
     
     methods
         % Constructor
-        function this = annotation(ed, ax, scale)
+        function this = annotation(ed, ax)
             this.editor = ed;
             this.ax = ax;
-            this.scale = scale;
         end
         
         
@@ -115,14 +113,18 @@ classdef annotation < handle
             this.settings = [];
         end
         
-        function setScale(~, ~)
+        function scaleChanged(~)
         end
         
         % Converts a number into a pixel length into a displayable distance
-        % using the scaling parameters in this.scale;
-        function str = dispLen(this, dist, nDigits)
+        % using the scaling parameters in this.editor.imageScale;
+        function str = dispLen(this, pixlen, nDigits)
+            % Convert pixlen to dist
+            scale = this.editor.imageScale;
+            dist = pixlen * scale.realLength * 10^scale.unitFactor(scale.unitIndex) / scale.pixelLength;
+            
             % Work with sorted factors
-            [factors, unsortedIndices] = sort(this.scale.unitFactor, 'descend');
+            [factors, unsortedIndices] = sort(this.editor.imageScale.unitFactor, 'descend');
             
             % Find the largest factor that gives us a value >= 1
             for i = 1:length(factors)
@@ -143,7 +145,7 @@ classdef annotation < handle
             numstr = num2str(scaledNum, ['%0.' num2str(nDecimals) 'f']);
             
             % Get fully formatted string
-            str = [numstr ' ' this.scale.units{unsortedIndices(i)}];
+            str = [numstr ' ' this.editor.imageScale.units{unsortedIndices(i)}];
         end
     end
     

@@ -9,6 +9,7 @@ classdef editor < handle
         panStartPos = [];           % Previous position of a pan operation
         dragHandle = [];            % Handle currently being dragged
         annotations;                % Cell arary of all the annotations
+        scaleAnnotation;            % Handle to the scale setting annotation
     end
     properties
         application;    % Main application
@@ -24,7 +25,7 @@ classdef editor < handle
         hitDist = 150;   % How far away a mouseover hit is registered
     end
     properties % Scale settings
-        imageScale = struct('realLength', 500, 'pixelLength', 500, ...
+        imageScale = struct('realLength', 500e-9, 'pixelLength', 800, ...
             'unitIndex', 5, 'units', {{'km', 'm', 'mm', 'um', 'nm'}}, ...
             'unitFactor', [3, 0, -3, -6, -9]);
     end
@@ -194,7 +195,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new distance annotation
-                this.activeAnnotation = distance(this, this.ax, this.imageScale, point);
+                this.activeAnnotation = distance(this, this.ax, point);
                 if(isempty(this.annotations))
                     this.annotations = {this.activeAnnotation};
                 else
@@ -212,7 +213,7 @@ classdef editor < handle
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
                 % First point: create a new distance annotation
-                this.activeAnnotation = scalebar(this, this.ax, this.imageScale, point);
+                this.activeAnnotation = scalebar(this, this.ax, point);
                 if(isempty(this.annotations))
                     this.annotations = {this.activeAnnotation};
                 else
@@ -384,7 +385,7 @@ classdef editor < handle
         function updateScale(this)
             for i = 1:length(this.annotations)
                 annotation = this.annotations{i};
-                annotation.setScale(this.imageScale);
+                annotation.scaleChanged();
             end
         end
     end
