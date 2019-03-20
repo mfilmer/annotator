@@ -25,7 +25,7 @@ classdef editor < handle
         hitDist = 150;   % How far away a mouseover hit is registered
     end
     properties % Scale settings
-        imageScale = struct('realLength', 500e-9, 'pixelLength', 800, ...
+        imageScale = struct('realLength', 500, 'pixelLength', 800, ...
             'unitIndex', 5, 'units', {{'km', 'm', 'mm', 'um', 'nm'}}, ...
             'unitFactor', [3, 0, -3, -6, -9]);
     end
@@ -208,17 +208,33 @@ classdef editor < handle
             end
         end
         
-        % The distance tool
+        % The scale bar measuring tool
         function scalebarClickOperation(this, point)
             % Determine if we are creating the first point or the second
             if(isempty(this.activeAnnotation))
-                % First point: create a new distance annotation
+                % First point: create a new scale annotation
                 this.activeAnnotation = scalebar(this, this.ax, point);
-                if(isempty(this.annotations))
-                    this.annotations = {this.activeAnnotation};
+                if(~isempty(this.scaleAnnotation))
+                    % Existing scale annotation: delete it
+                    for index = 1:length(this.annotations)
+                        if this.annotations{index} == this.scaleAnnotation
+                            break;
+                        end
+                    end
+                    delete(this.scaleAnnotation);
+                    this.scaleAnnotation = this.activeAnnotation;
+                    this.annotations{index} = this.activeAnnotation;
                 else
-                    this.annotations{end+1} = this.activeAnnotation;
+                    this.scaleAnnotation = this.activeAnnotation;
+                    
+                    % Include in the annotations full list
+                    if(isempty(this.annotations))
+                        this.annotations = {this.scaleAnnotation};
+                    else
+                        this.annotations{end+1} = this.scaleAnnotation;
+                    end
                 end
+                
             else
                 % Second point: set second point
                 this.activeAnnotation.finishLine(point);

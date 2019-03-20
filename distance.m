@@ -79,14 +79,6 @@ classdef distance < annotation
             dy = this.textOffset * cos(angle * pi/180);
             
             this.text.Position = [xm-dx, ym-dy, 0];
-            %[str, factor] = annotation.num2str(len);
-            %prefix = annotation.getPrefix(factor);
-            %if (isempty(prefix))
-            %    this.text.String = str;
-            %else
-            %    this.text.String = [str ' ' prefix];
-            %end
-            
             this.text.String = this.dispLen(len, 3);
             this.text.Rotation = angle;
         end
